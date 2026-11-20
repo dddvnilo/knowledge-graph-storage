@@ -1,12 +1,20 @@
 import pytest
 
-from ksplatform import PrerequisiteRelation, ResponseDataset, get_analysis, list_analyses, run_analysis
+from ksplatform import CATEGORIES, PrerequisiteRelation, ResponseDataset, get_analysis, list_analyses, run_analysis
 
 
 def test_analyses_are_discovered():
-    ids = [analysis.id for analysis in list_analyses()]
-    assert "daks.iita" in ids
-    assert "kst.space" in ids
+    ids = {analysis.id for analysis in list_analyses()}
+    assert {"daks.iita", "kst.space", "kst.validate", "pks.blim"} <= ids
+
+
+def test_every_analysis_has_a_known_category():
+    assert all(analysis.category in CATEGORIES for analysis in list_analyses())
+
+
+def test_list_by_category():
+    ids = {analysis.id for analysis in list_analyses("data_fit")}
+    assert ids == {"kst.validate", "pks.blim"}
 
 
 def test_unknown_analysis():

@@ -18,8 +18,9 @@ run_analysis(packages = c("pks"), analysis = function(input) {
 ```
 
 `run_analysis` handles reading the input, catching errors and recording the
-R and package versions. Input helpers: `response_frame()`, `relation_matrix()`,
-`transitive_closure()`.
+R and package versions. Input helpers: `response_frame()`,
+`aligned_responses()` (responses in a given item order), `relation_matrix()`,
+`transitive_closure()`, `structure_matrix()`, `kst_structure()`.
 
 **Python:** write a function `payload -> result dict` and wrap it in a
 `PythonRunner`, listing the distributions whose versions are provenance.
@@ -34,15 +35,20 @@ from ._base import Analysis
 
 ANALYSIS = Analysis(
     id="pks.blim",
+    category="data_fit",
     package="pks",
     function="blim",
     description="Fits a basic local independence model.",
     runner=RScriptRunner("pks_blim.R"),
-    inputs={"space": "knowledge_space", "responses": "responses"},
+    inputs={"structure": "knowledge_structure", "responses": "responses"},
     output_kind="blim_fit",
     default_params={"method": "ML"},
 )
 ```
+
+`category` is the question the analysis answers; the list is `CATEGORIES`
+in `core/ksplatform/analyses/_base.py`. A new kind of question is a new
+entry there.
 
 The module is discovered automatically because it defines `ANALYSIS` and its
 name does not start with `_`.
@@ -56,7 +62,7 @@ Mark R tests with `requires_r` from `conftest.py`.
 ## When a new input kind is needed
 
 If the analysis consumes something that has no class yet (for example a
-knowledge space or a Q-matrix), add a class that fulfils `AnalysisInput`
+Q-matrix), add a class that fulfils `AnalysisInput`
 (`core/ksplatform/inputs.py`): a `kind`, a `content_hash` and `to_payload()`.
 Existing analyses are not affected.
 

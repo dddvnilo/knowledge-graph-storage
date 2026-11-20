@@ -34,8 +34,12 @@ def _discover() -> dict[str, Analysis]:
     return found
 
 
-def list_analyses() -> list[Analysis]:
-    return sorted(_discover().values(), key=lambda analysis: analysis.id)
+def list_analyses(category: str | None = None) -> list[Analysis]:
+    """All analyses, or only those answering one category of question."""
+    analyses = sorted(_discover().values(), key=lambda analysis: analysis.id)
+    if category is not None:
+        analyses = [analysis for analysis in analyses if analysis.category == category]
+    return analyses
 
 
 def get_analysis(analysis_id: str) -> Analysis:

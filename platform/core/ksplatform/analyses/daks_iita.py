@@ -3,6 +3,7 @@ from ._base import Analysis
 
 ANALYSIS = Analysis(
     id="daks.iita",
+    category="derive_structure",
     package="DAKS",
     function="iita",
     description="Inductive item tree analysis: derives a prerequisite relation from response data.",
