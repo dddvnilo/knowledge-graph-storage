@@ -61,6 +61,35 @@ relation_matrix <- function(x) {
   m
 }
 
+# Converts a "knowledge_structure" input ({items, states}) into a
+# states x items 0/1 matrix with item names as column names.
+structure_matrix <- function(x) {
+  states <- x$states
+  if (!is.matrix(states)) states <- matrix(unlist(states), ncol = length(x$items), byrow = TRUE)
+  storage.mode(states) <- "integer"
+  colnames(states) <- x$items
+  states
+}
+
+# Converts a "knowledge_structure" input into a kst `kstructure` object.
+kst_structure <- function(x) {
+  states <- structure_matrix(x)
+  family <- lapply(seq_len(nrow(states)), function(i) as.set(x$items[states[i, ] == 1L]))
+  kstructure(as.set(family))
+}
+
+# Response matrix with columns in the order of `items`. Many packages match
+# columns by position, so responses and structures must agree on the order.
+aligned_responses <- function(responses, items) {
+  frame <- response_frame(responses)
+  missing <- setdiff(items, colnames(frame))
+  extra <- setdiff(colnames(frame), items)
+  if (length(missing) || length(extra))
+    stop("Responses and structure must have the same items. Missing in responses: ",
+         paste(missing, collapse = ", "), "; not in structure: ", paste(extra, collapse = ", "))
+  as.matrix(frame[, items, drop = FALSE])
+}
+
 # Transitive closure (Warshall), without reflexive pairs.
 transitive_closure <- function(m) {
   for (k in seq_len(nrow(m))) m <- (m | outer(m[, k], m[k, ], "&")) * 1L

@@ -6,6 +6,7 @@
 # Result:
 #   items   item ids, in the same order as the input
 #   states  [[0, 1, ...], ...]  one row per knowledge state, columns in item order
+#           (output kind "knowledge_structure": a space is a structure)
 #
 # kst needs a reflexive and transitively closed relation, otherwise it silently
 # returns wrong states. Both are added here, whatever the input's relation_form.

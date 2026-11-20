@@ -22,10 +22,15 @@ component, and integration with the group's knowledge graph.
 
 ## Available analyses
 
-| Id | Package | Input | Output |
-|---|---|---|---|
-| `daks.iita` | DAKS | responses | prerequisite relation |
-| `kst.space` | kst | prerequisite relation | knowledge space |
+Analyses are grouped by the question they answer (`category`), so several
+packages can offer the same kind of analysis.
+
+| Category | Id | Package | Inputs | Output |
+|---|---|---|---|---|
+| derive_structure | `daks.iita` | DAKS | responses | prerequisite relation |
+| build_structure | `kst.space` | kst | prerequisite relation | knowledge structure |
+| data_fit | `kst.validate` | kst | knowledge structure, responses | gamma, VC, DI, DA |
+| data_fit | `pks.blim` | pks | knowledge structure, responses | BLIM parameters and fit |
 
 Adding one: [docs/adding-an-analysis.md](docs/adding-an-analysis.md).
 
@@ -49,7 +54,7 @@ pytest
 ## Example
 
 ```python
-from ksplatform import PrerequisiteRelation, ResponseDataset, run_analysis
+from ksplatform import KnowledgeStructure, PrerequisiteRelation, ResponseDataset, run_analysis
 
 dataset = ResponseDataset.from_csv_file("examples/data/chain_example.csv")
 iita = run_analysis("daks.iita", {"responses": dataset}, {"version": 2})
@@ -60,6 +65,10 @@ iita.input_hashes           # which exact data it ran on
 relation = PrerequisiteRelation.from_payload(iita.result)
 space = run_analysis("kst.space", {"relation": relation})
 space.result["states"]      # one 0/1 row per knowledge state
+
+structure = KnowledgeStructure.from_payload(space.result)
+fit = run_analysis("kst.validate", {"structure": structure, "responses": dataset})
+fit.result["gamma"], fit.result["di"]
 ```
 
 ## Conventions

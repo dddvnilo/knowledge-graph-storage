@@ -2,6 +2,31 @@
 
 Short records of decisions and why they were made. Newest first.
 
+## 2026-11-20: Analyses are grouped by the question they answer
+
+Every analysis has a `category` (derive a structure, build a structure,
+inspect properties, fit to data, assess respondents, simulate). The same
+question is often answered by several packages; the interface will let the
+user pick the question first and the package second, as the project task
+asks ("the user can choose any of the packages").
+
+## 2026-11-20: One input kind for knowledge structures and spaces
+
+A knowledge space is a knowledge structure, and the fit analyses accept any
+structure, so both use `KnowledgeStructure` (`knowledge_structure`). It
+requires the empty and the full state, as the definition does.
+
+## 2026-11-20: Notes on the fit analyses
+
+- `kst::kvalidate` only accepts a structure. Gamma and VC are computed on the
+  prerequisite relation the structure implies.
+- `pks::blim` matches columns by position; the script reorders responses to
+  the structure's item order. Tested by shuffling columns.
+- With few items a BLIM can be saturated (as many parameters as free pattern
+  frequencies): the likelihood is then equal for any structure, and a wrong
+  structure only shows as implausible error rates. Prefer the `kst.validate`
+  measures for comparing structures on small tests.
+
 ## 2026-11-20: Extension without modification (open/closed principle)
 
 New packages and functions must be addable without editing existing code,

@@ -53,3 +53,46 @@ class PrerequisiteRelation:
             pairs=[(a, b) for a, b in payload.get("pairs", [])],
             relation_form=payload.get("relation_form", "as_given"),
         )
+
+
+@dataclass(frozen=True)
+class KnowledgeStructure:
+    """A knowledge structure: the family of admissible knowledge states.
+
+    Each state is a 0/1 row over `items` (1 = the item is in the state). By
+    definition a structure contains the empty state and the full state.
+    A knowledge space is a knowledge structure, so it uses this class too.
+    """
+
+    kind: ClassVar[str] = "knowledge_structure"
+
+    items: list[str]
+    states: list[list[int]]
+
+    def __post_init__(self) -> None:
+        if len(set(self.items)) != len(self.items):
+            raise StructureError("Item ids must be unique.")
+        for row in self.states:
+            if len(row) != len(self.items):
+                raise StructureError(f"State {row} does not have one value per item.")
+            if any(value not in (0, 1) for value in row):
+                raise StructureError(f"State {row} must contain only 0 and 1.")
+        rows = {tuple(row) for row in self.states}
+        if len(rows) != len(self.states):
+            raise StructureError("States must be unique.")
+        if (0,) * len(self.items) not in rows or (1,) * len(self.items) not in rows:
+            raise StructureError("A knowledge structure must contain the empty and the full state.")
+
+    @property
+    def content_hash(self) -> str:
+        order = sorted(range(len(self.items)), key=lambda i: self.items[i])
+        states = sorted("".join(str(row[i]) for i in order) for row in self.states)
+        return canonical_hash({"items": sorted(self.items), "states": states})
+
+    def to_payload(self) -> dict:
+        return {"items": self.items, "states": self.states}
+
+    @classmethod
+    def from_payload(cls, payload: dict) -> "KnowledgeStructure":
+        """Build from an analysis result or an export with items and states."""
+        return cls(items=list(payload["items"]), states=[list(row) for row in payload["states"]])
