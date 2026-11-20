@@ -1,0 +1,17 @@
+# CQ4: What did a structure derive from, directly or indirectly (full provenance chain)?
+# Parameter: the structure, written as the constant start of the path.
+#
+# The path runs over all graphs (no GRAPH clause), because each link of the chain is in
+# the metadata graph of a different structure. Virtuoso needs the start of a `+` path to
+# be a constant here; VALUES or a variable does not work (infra/README.md).
+
+PREFIX ks:     <https://example.org/ks#>
+PREFIX prov:   <http://www.w3.org/ns/prov#>
+PREFIX struct: <https://example.org/data/structure/>
+
+SELECT DISTINCT ?ancestor ?type
+WHERE {
+  struct:pr-derived-T1 prov:wasDerivedFrom+ ?ancestor .
+  OPTIONAL { GRAPH ?meta { ?ancestor a ?type } }
+}
+ORDER BY ?ancestor

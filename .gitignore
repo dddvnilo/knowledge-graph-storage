@@ -1,0 +1,10 @@
+# Virtuoso database files and local secrets
+infra/virtuoso-data/
+infra/.env
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

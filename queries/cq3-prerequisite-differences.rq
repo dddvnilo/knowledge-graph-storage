@@ -1,0 +1,31 @@
+# CQ3: Which prerequisite links does source A state that source B does not, and vice versa?
+# Parameters: pairs of prerequisite relations (VALUES ?a ?b).
+#
+# Compares the stored transitive closures, so a link that one source states directly and
+# the other only implies is not a difference. Comparing the content graphs instead
+# (GRAPH ?a / GRAPH ?b) gives the difference of the links as stated.
+
+PREFIX ks:     <https://example.org/ks#>
+PREFIX struct: <https://example.org/data/structure/>
+
+SELECT ?a ?b ?onlyIn ?from ?to
+WHERE {
+  VALUES (?a ?b) {
+    (struct:pr-query-T1 struct:pr-iita-T1)          # expert (QUERY) vs. IITA
+    (struct:pr-iita-T1  struct:pr-transformer-T1)   # two methods over the same data
+  }
+  GRAPH ?metaA { ?a ks:closureGraph ?closureA }
+  GRAPH ?metaB { ?b ks:closureGraph ?closureB }
+  {
+    GRAPH ?closureA { ?from ks:prerequisiteOf ?to }
+    FILTER NOT EXISTS { GRAPH ?closureB { ?from ks:prerequisiteOf ?to } }
+    BIND("A" AS ?onlyIn)
+  }
+  UNION
+  {
+    GRAPH ?closureB { ?from ks:prerequisiteOf ?to }
+    FILTER NOT EXISTS { GRAPH ?closureA { ?from ks:prerequisiteOf ?to } }
+    BIND("B" AS ?onlyIn)
+  }
+}
+ORDER BY ?a ?b ?onlyIn ?from ?to

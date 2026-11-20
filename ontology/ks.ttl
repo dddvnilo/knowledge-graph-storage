@@ -1,0 +1,320 @@
+@prefix ks:      <https://example.org/ks#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+# Ontology for knowledge structures and competencies, with provenance.
+# How the classes are used in named graphs: ontology/README.md.
+
+<https://example.org/ks> a owl:Ontology ;
+    rdfs:label "Knowledge structures and competencies"@en ;
+    rdfs:comment """Items, competencies, Q-matrices, prerequisite relations and knowledge spaces
+from different sources, each version kept in its own named graph and described with PROV-O.
+Reuses PROV-O for provenance and SKOS for competencies and their mappings."""@en ;
+    dcterms:created "2026-11-20"^^xsd:date ;
+    owl:versionInfo "0.1.0" .
+
+#################################################################
+#   Domain: tests, items, competencies
+#################################################################
+
+ks:Test a owl:Class ;
+    rdfs:label "Test"@en ;
+    rdfs:comment "A set of items given together. Items are listed with ks:hasItem."@en .
+
+ks:Item a owl:Class ;
+    rdfs:label "Item"@en ;
+    rdfs:comment "A single task or question on a test. An item belongs to exactly one test."@en .
+
+ks:Competency a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Competency"@en ;
+    rdfs:comment """A skill or concept needed to solve items. Belongs to one competency scheme
+(skos:inScheme). Competencies of different schemes are never merged; they are linked
+through a ks:CompetencyMapping."""@en .
+
+ks:CompetencyScheme a owl:Class ;
+    rdfs:subClassOf skos:ConceptScheme ;
+    rdfs:label "Competency scheme"@en ;
+    rdfs:comment "A list of competencies used together, e.g. one research group's list for one test, or one Learning Commons framework."@en .
+
+#################################################################
+#   Structures
+#################################################################
+
+ks:KnowledgeStructure a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "Knowledge structure"@en ;
+    rdfs:comment """One version (or one run) of a structure from one source. Its content is the
+named graph whose IRI is the IRI of the structure; its description and provenance are in a
+separate metadata graph. The content graph declares the scope of the structure with
+ks:coversItem / ks:coversCompetency."""@en .
+
+ks:QMatrix a owl:Class ;
+    rdfs:subClassOf ks:KnowledgeStructure ;
+    rdfs:label "Q-matrix"@en ;
+    rdfs:comment """Item x competency matrix. In its content graph a cell with value 1 is the triple
+`item ks:requires competency`. A cell inside the declared scope without that triple is 0.
+Unknown cells and cells with annotations are ks:QEntry nodes."""@en .
+
+ks:PrerequisiteRelation a owl:Class ;
+    rdfs:subClassOf ks:KnowledgeStructure ;
+    rdfs:label "Prerequisite relation"@en ;
+    rdfs:comment """Links `a ks:prerequisiteOf b` between items or between competencies, as stated by
+the source. Its transitive closure is stored in a separate graph (ks:closureGraph)."""@en .
+
+ks:KnowledgeSpace a owl:Class ;
+    rdfs:subClassOf ks:KnowledgeStructure ;
+    rdfs:label "Knowledge space"@en ;
+    rdfs:comment "A set of admissible knowledge states (ks:hasState), listed explicitly."@en .
+
+ks:QEntry a owl:Class ;
+    rdfs:label "Q-matrix entry"@en ;
+    rdfs:comment """One cell of a Q-matrix that needs more than a ks:requires triple: an unknown value,
+or a value with a confidence or rationale. Lives in the content graph of its Q-matrix."""@en .
+
+ks:CellValue a owl:Class ;
+    rdfs:label "Cell value"@en ;
+    rdfs:comment "Value of a ks:QEntry."@en ;
+    owl:oneOf ( ks:Required ks:NotRequired ks:Unknown ) .
+
+ks:Required a ks:CellValue ;
+    rdfs:label "required (1)"@en .
+ks:NotRequired a ks:CellValue ;
+    rdfs:label "not required (0)"@en .
+ks:Unknown a ks:CellValue ;
+    rdfs:label "unknown"@en ;
+    rdfs:comment "The source does not say whether the item requires the competency. Never read as 0."@en .
+
+ks:KnowledgeState a owl:Class ;
+    rdfs:label "Knowledge state"@en ;
+    rdfs:comment "One admissible state of a knowledge space: the items listed with ks:containsItem. The empty state has none."@en .
+
+ks:CompetencyMapping a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "Competency mapping"@en ;
+    rdfs:comment """SKOS mapping links (skos:exactMatch, closeMatch, broadMatch, narrowMatch, relatedMatch)
+from the competencies of one scheme to those of another. Like a structure, its content is
+the named graph with its IRI, and it carries its own provenance."""@en .
+
+ks:ResponseDataset a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "Response dataset"@en ;
+    rdfs:comment "Response data of students on a test. Only referenced (location, checksum), never stored in the graph."@en .
+
+#################################################################
+#   Activities (how a structure was produced)
+#################################################################
+
+ks:ExpertElicitation a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Expert elicitation"@en ;
+    rdfs:comment "One or more experts state a structure directly."@en .
+
+ks:QueryProcedure a owl:Class ;
+    rdfs:subClassOf ks:ExpertElicitation ;
+    rdfs:label "QUERY procedure"@en ;
+    rdfs:comment "Building a knowledge structure by systematically questioning an expert."@en .
+
+ks:LLMElicitation a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "LLM elicitation"@en ;
+    rdfs:comment "A large language model produces a structure from a prompt (the plan). The model is a prov:SoftwareAgent with ks:softwareVersion."@en .
+
+ks:DataDrivenDerivation a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Data-driven derivation"@en ;
+    rdfs:comment "A method derives a structure from response data, e.g. IITA or kst-transformer."@en .
+
+ks:Transformation a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Transformation"@en ;
+    rdfs:comment """A deterministic computation of a structure from other structures, e.g. a knowledge space
+from a prerequisite relation, or an item-level relation from a competency-level relation and a
+Q-matrix. The plan names the computation."""@en .
+
+ks:CompetencyAlignment a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Competency alignment"@en ;
+    rdfs:comment "Producing a ks:CompetencyMapping between two competency schemes."@en .
+
+ks:Import a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Import"@en ;
+    rdfs:comment "Taking over a structure that was produced outside the group, e.g. from Learning Commons."@en .
+
+ks:Parameter a owl:Class ;
+    rdfs:label "Parameter"@en ;
+    rdfs:comment "One named parameter value of an activity, e.g. temperature = 0.0."@en .
+
+#################################################################
+#   Object properties
+#################################################################
+
+ks:hasItem a owl:ObjectProperty ;
+    rdfs:label "has item"@en ;
+    rdfs:domain ks:Test ;
+    rdfs:range ks:Item .
+
+ks:forTest a owl:ObjectProperty ;
+    rdfs:label "for test"@en ;
+    rdfs:comment "The test whose items the structure is about."@en ;
+    rdfs:domain ks:KnowledgeStructure ;
+    rdfs:range ks:Test .
+
+ks:usesScheme a owl:ObjectProperty ;
+    rdfs:label "uses scheme"@en ;
+    rdfs:comment "The competency scheme whose competencies the structure is about."@en ;
+    rdfs:domain ks:KnowledgeStructure ;
+    rdfs:range ks:CompetencyScheme .
+
+ks:coversItem a owl:ObjectProperty ;
+    rdfs:label "covers item"@en ;
+    rdfs:comment "An item in the scope of the structure. Within the scope, a missing link means 'no', not 'not considered'."@en ;
+    rdfs:domain ks:KnowledgeStructure ;
+    rdfs:range ks:Item .
+
+ks:coversCompetency a owl:ObjectProperty ;
+    rdfs:label "covers competency"@en ;
+    rdfs:comment "A competency in the scope of the structure. Within the scope, a missing link means 'no', not 'not considered'."@en ;
+    rdfs:domain ks:KnowledgeStructure ;
+    rdfs:range ks:Competency .
+
+ks:requires a owl:ObjectProperty ;
+    rdfs:label "requires"@en ;
+    rdfs:comment "Q-matrix cell with value 1. Only meaningful inside the content graph of a ks:QMatrix."@en ;
+    rdfs:domain ks:Item ;
+    rdfs:range ks:Competency .
+
+ks:prerequisiteOf a owl:ObjectProperty ;
+    rdfs:label "prerequisite of"@en ;
+    rdfs:comment """`a ks:prerequisiteOf b`: whoever masters b also masters a. Between items or between
+competencies. Only meaningful inside the content or closure graph of a ks:PrerequisiteRelation.
+The content graph holds the links as the source states them, not necessarily closed."""@en .
+
+ks:closureGraph a owl:ObjectProperty ;
+    rdfs:label "closure graph"@en ;
+    rdfs:comment "Named graph holding the transitive closure (without reflexive links) of a prerequisite relation, computed when the relation is ingested."@en ;
+    rdfs:domain ks:PrerequisiteRelation .
+
+ks:hasState a owl:ObjectProperty ;
+    rdfs:label "has state"@en ;
+    rdfs:domain ks:KnowledgeSpace ;
+    rdfs:range ks:KnowledgeState .
+
+ks:containsItem a owl:ObjectProperty ;
+    rdfs:label "contains item"@en ;
+    rdfs:domain ks:KnowledgeState ;
+    rdfs:range ks:Item .
+
+ks:item a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "item"@en ;
+    rdfs:domain ks:QEntry ;
+    rdfs:range ks:Item .
+
+ks:competency a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "competency"@en ;
+    rdfs:domain ks:QEntry ;
+    rdfs:range ks:Competency .
+
+ks:value a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "value"@en ;
+    rdfs:domain ks:QEntry ;
+    rdfs:range ks:CellValue .
+
+ks:fromScheme a owl:ObjectProperty ;
+    rdfs:label "from scheme"@en ;
+    rdfs:comment "The scheme whose competencies are the subjects of the mapping links."@en ;
+    rdfs:domain ks:CompetencyMapping ;
+    rdfs:range ks:CompetencyScheme .
+
+ks:toScheme a owl:ObjectProperty ;
+    rdfs:label "to scheme"@en ;
+    rdfs:comment "The scheme whose competencies are the objects of the mapping links."@en ;
+    rdfs:domain ks:CompetencyMapping ;
+    rdfs:range ks:CompetencyScheme .
+
+ks:hasParameter a owl:ObjectProperty ;
+    rdfs:label "has parameter"@en ;
+    rdfs:domain prov:Activity ;
+    rdfs:range ks:Parameter .
+
+#################################################################
+#   Datatype properties
+#################################################################
+
+ks:text a owl:DatatypeProperty ;
+    rdfs:label "text"@en ;
+    rdfs:comment "The text of an item as given to students. Competencies use skos:definition."@en ;
+    rdfs:domain ks:Item ;
+    rdfs:range rdf:langString .
+
+ks:sourceLabel a owl:DatatypeProperty ;
+    rdfs:label "source label"@en ;
+    rdfs:comment """A label exactly as written in one source, e.g. 'Zadatak 1' or 'K1'. Stated in the content
+graph of the structure that used it, because different sources label the same item differently."""@en ;
+    rdfs:range xsd:string .
+
+ks:versionLabel a owl:DatatypeProperty ;
+    rdfs:label "version label"@en ;
+    rdfs:comment "A deliberate version of the same source (v1, v2). The previous version is given with prov:wasRevisionOf."@en ;
+    rdfs:domain prov:Entity ;
+    rdfs:range xsd:string .
+
+ks:runLabel a owl:DatatypeProperty ;
+    rdfs:label "run label"@en ;
+    rdfs:comment "An independent repeated run of the same procedure (r1, r2), e.g. of an LLM. Runs stand side by side; none replaces another."@en ;
+    rdfs:domain prov:Entity ;
+    rdfs:range xsd:string .
+
+ks:confidence a owl:DatatypeProperty ;
+    rdfs:label "confidence"@en ;
+    rdfs:comment "Confidence of the source in the value of a cell, between 0 and 1."@en ;
+    rdfs:domain ks:QEntry ;
+    rdfs:range xsd:decimal .
+
+ks:rationale a owl:DatatypeProperty ;
+    rdfs:label "rationale"@en ;
+    rdfs:comment "The source's reason for the value of a cell."@en ;
+    rdfs:domain ks:QEntry .
+
+ks:planText a owl:DatatypeProperty ;
+    rdfs:label "plan text"@en ;
+    rdfs:comment "The full text of a plan, e.g. an LLM prompt."@en ;
+    rdfs:domain prov:Plan .
+
+ks:softwareVersion a owl:DatatypeProperty ;
+    rdfs:label "software version"@en ;
+    rdfs:comment "Exact version of a program or package, or the exact model identifier of an LLM."@en ;
+    rdfs:domain prov:SoftwareAgent ;
+    rdfs:range xsd:string .
+
+ks:parameterName a owl:DatatypeProperty ;
+    rdfs:label "parameter name"@en ;
+    rdfs:domain ks:Parameter ;
+    rdfs:range xsd:string .
+
+ks:parameterValue a owl:DatatypeProperty ;
+    rdfs:label "parameter value"@en ;
+    rdfs:comment "Any literal: number, string or boolean."@en ;
+    rdfs:domain ks:Parameter .
+
+ks:sha256 a owl:DatatypeProperty ;
+    rdfs:label "SHA-256"@en ;
+    rdfs:comment "SHA-256 checksum (lowercase hex) of a file that is referenced but not stored."@en ;
+    rdfs:domain prov:Entity ;
+    rdfs:range xsd:string .
+
+ks:location a owl:DatatypeProperty ;
+    rdfs:label "location"@en ;
+    rdfs:comment "Where a referenced entity can be found: path, URL or DOI."@en ;
+    rdfs:domain prov:Entity .
+
+ks:respondentCount a owl:DatatypeProperty ;
+    rdfs:label "respondent count"@en ;
+    rdfs:domain ks:ResponseDataset ;
+    rdfs:range xsd:nonNegativeInteger .

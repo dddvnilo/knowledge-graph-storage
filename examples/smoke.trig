@@ -1,0 +1,25 @@
+# Smoke-test data for the infrastructure only.
+# It is NOT the project's data model: names and structure here are placeholders.
+
+@prefix ex:   <https://example.org/smoke/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# Two versions of a prerequisite structure over the same three items
+ex:structure-a {
+    ex:item1 ex:prerequisiteOf ex:item2 .
+    ex:item2 ex:prerequisiteOf ex:item3 .
+}
+
+ex:structure-b {
+    ex:item1 ex:prerequisiteOf ex:item2 .
+    ex:item1 ex:prerequisiteOf ex:item3 .
+}
+
+# Provenance of both versions
+ex:meta {
+    ex:structure-a a prov:Entity ; prov:wasAttributedTo ex:expert ;
+        prov:generatedAtTime "2026-11-20T12:00:00Z"^^xsd:dateTime .
+    ex:structure-b a prov:Entity ; prov:wasGeneratedBy ex:run-1 .
+    ex:run-1 a prov:Activity ; prov:wasAssociatedWith ex:some-algorithm .
+}

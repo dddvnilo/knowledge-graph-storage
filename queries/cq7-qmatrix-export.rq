@@ -1,0 +1,21 @@
+# CQ7: Export a given structure for a given R/Python package, together with its provenance.
+# Parameter: the Q-matrix (VALUES ?structure).
+#
+# The full matrix in long form, one row per cell, with 0 for covered cells without a link
+# and NA for unknown cells (as R reads them). Turning it into the wide item x competency
+# table a package expects, and writing provenance next to it, is the job of the export
+# tool (T11); the provenance itself is the CQ1 / CQ4 answer for the same structure.
+
+PREFIX ks:     <https://example.org/ks#>
+PREFIX struct: <https://example.org/data/structure/>
+
+SELECT ?item ?competency ?value
+WHERE {
+  VALUES ?structure { struct:qm-expert-T1-v1 }
+  GRAPH ?structure { ?structure ks:coversItem ?item ; ks:coversCompetency ?competency }
+  OPTIONAL { GRAPH ?structure { ?item ks:requires ?competency } BIND(1 AS ?required) }
+  OPTIONAL { GRAPH ?structure { ?entry ks:item ?item ; ks:competency ?competency ; ks:value ks:Unknown }
+             BIND(1 AS ?unknown) }
+  BIND(IF(BOUND(?unknown), "NA", IF(BOUND(?required), "1", "0")) AS ?value)
+}
+ORDER BY ?item ?competency

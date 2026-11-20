@@ -1,0 +1,5 @@
+structure,procedure,agent,plan,version,run,revisionOf,generatedAt
+struct:qm-expert-T1-v1,ks:ExpertElicitation,agent:expert-01,,v1,,,
+struct:qm-expert-T1-v2,ks:ExpertElicitation,agent:expert-01,,v2,,struct:qm-expert-T1-v1,2026-10-05T09:00:00Z
+struct:qm-llm-T1-r1,ks:LLMElicitation,agent:llm-model-a,plan:prompt-qm-v1,,r1,,2026-05-02T10:14:00Z
+struct:qm-llm-T1-r2,ks:LLMElicitation,agent:llm-model-a,plan:prompt-qm-v1,,r2,,2026-05-02T10:20:00Z

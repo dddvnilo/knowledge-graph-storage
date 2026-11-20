@@ -1,0 +1,5 @@
+competency,match,counterpart,relation,lcOther,ourOther
+k1:add,skos:exactMatch,lc:4.NF.B.3,prerequisiteOf,lc:5.NF.A.1,k1:expand
+k1:expand,skos:closeMatch,lc:5.NF.A.1,hasPrerequisite,lc:4.NF.A.1,k1:reduce
+k1:expand,skos:closeMatch,lc:5.NF.A.1,hasPrerequisite,lc:4.NF.B.3,k1:add
+k1:reduce,skos:relatedMatch,lc:4.NF.A.1,prerequisiteOf,lc:5.NF.A.1,k1:expand

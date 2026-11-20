@@ -1,0 +1,15 @@
+# CQ5: Which structures were derived from the same response data?
+# No parameter: lists every response dataset with all structures derived from it,
+# directly (e.g. IITA) or indirectly (e.g. a knowledge space computed from an IITA result).
+
+PREFIX ks:   <https://example.org/ks#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT DISTINCT ?dataset ?structure ?type ?derivation
+WHERE {
+  GRAPH ?datasetMeta { ?dataset a ks:ResponseDataset }
+  ?structure prov:wasDerivedFrom+ ?dataset .
+  GRAPH ?meta { ?structure a ?type }
+  BIND(IF(EXISTS { ?structure prov:wasDerivedFrom ?dataset }, "direct", "indirect") AS ?derivation)
+}
+ORDER BY ?dataset ?structure

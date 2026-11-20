@@ -1,0 +1,45 @@
+# CQ2: How well do two Q-matrices for the same test agree?
+# Parameters: pairs of Q-matrices (VALUES ?a ?b).
+#
+# Compares cell by cell over the cells both matrices cover. A covered cell without a
+# ks:requires link is 0; a cell that either matrix marks ks:Unknown is left out.
+#   onlyA / onlyB  cells that are 1 only in A / only in B
+#   accuracy       share of equal cells
+#   kappa          Cohen's kappa (agreement corrected for chance)
+
+PREFIX ks:     <https://example.org/ks#>
+PREFIX struct: <https://example.org/data/structure/>
+
+SELECT ?a ?b ?cells ?both1 ?both0 ?onlyA ?onlyB ?accuracy ?kappa
+WHERE {
+  {
+    SELECT ?a ?b (COUNT(*) AS ?cells)
+           (SUM(?x * ?y) AS ?both1)           (SUM((1 - ?x) * (1 - ?y)) AS ?both0)
+           (SUM(?x * (1 - ?y)) AS ?onlyA)     (SUM((1 - ?x) * ?y) AS ?onlyB)
+           (SUM(?x) AS ?onesA)                (SUM(?y) AS ?onesB)
+    WHERE {
+      VALUES (?a ?b) {
+        (struct:qm-expert-T1-v2 struct:qm-llm-T1-r1)   # expert vs. LLM
+        (struct:qm-llm-T1-r1    struct:qm-llm-T1-r2)   # two runs of the same LLM
+        (struct:qm-expert-T1-v1 struct:qm-llm-T1-r1)   # with one unknown cell in A
+      }
+      GRAPH ?a { ?a ks:coversItem ?item ; ks:coversCompetency ?comp }
+      GRAPH ?b { ?b ks:coversItem ?item ; ks:coversCompetency ?comp }
+      FILTER NOT EXISTS { GRAPH ?a { ?ea ks:item ?item ; ks:competency ?comp ; ks:value ks:Unknown } }
+      FILTER NOT EXISTS { GRAPH ?b { ?eb ks:item ?item ; ks:competency ?comp ; ks:value ks:Unknown } }
+      OPTIONAL { GRAPH ?a { ?item ks:requires ?comp } BIND(1 AS ?inA) }
+      OPTIONAL { GRAPH ?b { ?item ks:requires ?comp } BIND(1 AS ?inB) }
+      BIND(COALESCE(?inA, 0) AS ?x)
+      BIND(COALESCE(?inB, 0) AS ?y)
+    }
+    GROUP BY ?a ?b
+  }
+  # kappa = (p_observed - p_chance) / (1 - p_chance), multiplied out to whole numbers:
+  # (n * agreeing - E) / (n^2 - E) with E = onesA * onesB + zerosA * zerosB.
+  # Written as one expression each: Virtuoso leaves a BIND empty when it uses the
+  # variable of an earlier BIND.
+  BIND(1.0 * (?both1 + ?both0) / ?cells AS ?accuracy)
+  BIND(1.0 * (?cells * (?both1 + ?both0) - (?onesA * ?onesB + (?cells - ?onesA) * (?cells - ?onesB)))
+           / (?cells * ?cells - (?onesA * ?onesB + (?cells - ?onesA) * (?cells - ?onesB))) AS ?kappa)
+}
+ORDER BY ?a ?b
