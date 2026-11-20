@@ -1,0 +1,476 @@
+# Hand-written example of the data model (task T3).
+#
+# One small test (T1, adding fractions: 4 items, 3 competencies) with structures from every
+# kind of source, so that every question CQ1-CQ7 has an answer (queries/). All data is made up;
+# the Learning Commons part only imitates the shape of the Math Coherence Map.
+#
+# Layout (ontology/README.md): every structure S has
+#   struct:S    content graph (the structure itself, with its scope)
+#   meta:S      description and provenance of S
+#   closure:S   transitive closure, for prerequisite relations only
+# and every test and competency scheme has a graph with its own IRI.
+
+@prefix ks:       <https://example.org/ks#> .
+@prefix prov:     <http://www.w3.org/ns/prov#> .
+@prefix skos:     <http://www.w3.org/2004/02/skos/core#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix test:     <https://example.org/data/test/> .
+@prefix scheme:   <https://example.org/data/scheme/> .
+@prefix struct:   <https://example.org/data/structure/> .
+@prefix meta:     <https://example.org/data/meta/> .
+@prefix closure:  <https://example.org/data/closure/> .
+@prefix agent:    <https://example.org/data/agent/> .
+@prefix plan:     <https://example.org/data/plan/> .
+@prefix activity: <https://example.org/data/activity/> .
+@prefix source:   <https://example.org/data/source/> .
+
+# Shorthands for this file: items of T1, competencies of K-T1 and of the Learning Commons excerpt.
+@prefix t1:       <https://example.org/data/test/T1/item/> .
+@prefix k1:       <https://example.org/data/scheme/K-T1/competency/> .
+@prefix lc:       <https://example.org/data/scheme/lc-mcm/competency/> .
+
+
+# ============================================================== test and competency schemes
+
+test:T1 {
+    test:T1 a ks:Test ;
+        rdfs:label "T1: adding fractions (example)"@en ;
+        ks:hasItem t1:z1 , t1:z2 , t1:z3 , t1:z4 .
+
+    t1:z1 a ks:Item ; rdfs:label "z1" ; ks:text "Izračunaj 1/4 + 2/4."@sr .
+    t1:z2 a ks:Item ; rdfs:label "z2" ; ks:text "Izračunaj 1/6 + 3/6 i rezultat napiši u skraćenom obliku."@sr .
+    t1:z3 a ks:Item ; rdfs:label "z3" ; ks:text "Izračunaj 1/2 + 1/3."@sr .
+    t1:z4 a ks:Item ; rdfs:label "z4" ; ks:text "Izračunaj 1/2 + 1/6 i rezultat napiši u skraćenom obliku."@sr .
+}
+
+scheme:K-T1 {
+    scheme:K-T1 a ks:CompetencyScheme ;
+        skos:prefLabel "Competencies for T1 (example)"@en .
+
+    k1:add a ks:Competency ; skos:inScheme scheme:K-T1 ;
+        skos:prefLabel "sabiranje razlomaka sa istim imeniocem"@sr ;
+        skos:definition "Sabiranje razlomaka koji imaju isti imenilac."@sr .
+    k1:reduce a ks:Competency ; skos:inScheme scheme:K-T1 ;
+        skos:prefLabel "skraćivanje razlomaka"@sr ;
+        skos:definition "Svođenje razlomka na neskrativ oblik."@sr .
+    k1:expand a ks:Competency ; skos:inScheme scheme:K-T1 ;
+        skos:prefLabel "svođenje na zajednički imenilac"@sr ;
+        skos:definition "Proširivanje razlomaka tako da imaju isti imenilac."@sr .
+}
+
+# Imitates a Learning Commons framework; real identifiers and texts come with task T7.
+scheme:lc-mcm {
+    scheme:lc-mcm a ks:CompetencyScheme ;
+        skos:prefLabel "Learning Commons Math Coherence Map (illustrative excerpt)"@en .
+
+    lc:4.NF.A.1 a ks:Competency ; skos:inScheme scheme:lc-mcm ; skos:notation "4.NF.A.1" ;
+        skos:prefLabel "Explain and generate equivalent fractions"@en .
+    lc:4.NF.B.3 a ks:Competency ; skos:inScheme scheme:lc-mcm ; skos:notation "4.NF.B.3" ;
+        skos:prefLabel "Add and subtract fractions with like denominators"@en .
+    lc:5.NF.A.1 a ks:Competency ; skos:inScheme scheme:lc-mcm ; skos:notation "5.NF.A.1" ;
+        skos:prefLabel "Add and subtract fractions with unlike denominators"@en .
+}
+
+
+# ============================================================== Q-matrices
+# Columns in comments: add reduce expand.
+
+# --- 1. Expert, version 1. One cell unknown (z4 / expand).
+struct:qm-expert-T1-v1 {
+    struct:qm-expert-T1-v1
+        ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 ;
+        ks:coversCompetency k1:add , k1:reduce , k1:expand .
+
+    t1:z1 ks:requires k1:add .                        # 1 0 0
+    t1:z2 ks:requires k1:add , k1:reduce .            # 1 1 0
+    t1:z3 ks:requires k1:add , k1:expand .            # 1 0 1
+    t1:z4 ks:requires k1:add , k1:reduce .            # 1 1 ?
+    [] a ks:QEntry ; ks:item t1:z4 ; ks:competency k1:expand ; ks:value ks:Unknown .
+
+    t1:z1 ks:sourceLabel "Zadatak 1" .  t1:z2 ks:sourceLabel "Zadatak 2" .
+    t1:z3 ks:sourceLabel "Zadatak 3" .  t1:z4 ks:sourceLabel "Zadatak 4" .
+    k1:add ks:sourceLabel "K1" .  k1:reduce ks:sourceLabel "K2" .  k1:expand ks:sourceLabel "K3" .
+}
+
+meta:qm-expert-T1-v1 {
+    struct:qm-expert-T1-v1 a ks:QMatrix ;
+        rdfs:label "Expert Q-matrix for T1, v1"@en ;
+        ks:forTest test:T1 ; ks:usesScheme scheme:K-T1 ;
+        ks:versionLabel "v1" ;
+        prov:wasGeneratedBy activity:qm-expert-T1-v1 ;
+        prov:wasAttributedTo agent:expert-01 ;
+        prov:wasDerivedFrom source:T1-item-texts .
+        # generation time unknown: prov:generatedAtTime is left out
+
+    activity:qm-expert-T1-v1 a ks:ExpertElicitation ;
+        prov:wasAssociatedWith agent:expert-01 ;
+        prov:used source:T1-item-texts .
+
+    agent:expert-01 a prov:Person ; rdfs:label "Expert 01" .
+    source:T1-item-texts a prov:Entity ; rdfs:label "Item texts of test T1"@en .
+}
+
+# --- 2. Expert, version 2: revises v1 and settles the unknown cell.
+struct:qm-expert-T1-v2 {
+    struct:qm-expert-T1-v2
+        ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 ;
+        ks:coversCompetency k1:add , k1:reduce , k1:expand .
+
+    t1:z1 ks:requires k1:add .                        # 1 0 0
+    t1:z2 ks:requires k1:add , k1:reduce .            # 1 1 0
+    t1:z3 ks:requires k1:add , k1:expand .            # 1 0 1
+    t1:z4 ks:requires k1:add , k1:reduce , k1:expand .# 1 1 1
+}
+
+meta:qm-expert-T1-v2 {
+    struct:qm-expert-T1-v2 a ks:QMatrix ;
+        rdfs:label "Expert Q-matrix for T1, v2"@en ;
+        ks:forTest test:T1 ; ks:usesScheme scheme:K-T1 ;
+        ks:versionLabel "v2" ;
+        prov:wasRevisionOf struct:qm-expert-T1-v1 ;
+        prov:wasDerivedFrom struct:qm-expert-T1-v1 ;        # stated as well: no reasoning in the store
+        prov:wasGeneratedBy activity:qm-expert-T1-v2 ;
+        prov:wasAttributedTo agent:expert-01 ;
+        prov:generatedAtTime "2026-10-05T09:00:00Z"^^xsd:dateTime .
+
+    activity:qm-expert-T1-v2 a ks:ExpertElicitation ;
+        prov:wasAssociatedWith agent:expert-01 ;
+        prov:used struct:qm-expert-T1-v1 .
+
+    agent:expert-01 a prov:Person ; rdfs:label "Expert 01" .
+}
+
+# --- 3. LLM, run 1. One annotated cell.
+struct:qm-llm-T1-r1 {
+    struct:qm-llm-T1-r1
+        ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 ;
+        ks:coversCompetency k1:add , k1:reduce , k1:expand .
+
+    t1:z1 ks:requires k1:add .                        # 1 0 0
+    t1:z2 ks:requires k1:add .                        # 1 0 0
+    t1:z3 ks:requires k1:add , k1:expand .            # 1 0 1
+    t1:z4 ks:requires k1:add , k1:reduce , k1:expand .# 1 1 1
+    [] a ks:QEntry ; ks:item t1:z2 ; ks:competency k1:reduce ; ks:value ks:NotRequired ;
+        ks:confidence 0.40 ;
+        ks:rationale "4/6 se može ostaviti neskraćeno."@sr .
+}
+
+meta:qm-llm-T1-r1 {
+    struct:qm-llm-T1-r1 a ks:QMatrix ;
+        rdfs:label "LLM Q-matrix for T1, run 1"@en ;
+        ks:forTest test:T1 ; ks:usesScheme scheme:K-T1 ;
+        ks:runLabel "r1" ;
+        prov:wasGeneratedBy activity:qm-llm-T1-r1 ;
+        prov:wasAttributedTo agent:llm-model-a ;
+        prov:wasDerivedFrom source:T1-item-texts , source:K-T1-descriptions ;
+        prov:generatedAtTime "2026-05-02T10:14:00Z"^^xsd:dateTime .
+
+    activity:qm-llm-T1-r1 a ks:LLMElicitation ;
+        prov:wasAssociatedWith agent:llm-model-a ;
+        prov:qualifiedAssociation [ a prov:Association ;
+            prov:agent agent:llm-model-a ; prov:hadPlan plan:prompt-qm-v1 ] ;
+        prov:used source:T1-item-texts , source:K-T1-descriptions ;
+        ks:hasParameter [ a ks:Parameter ; ks:parameterName "temperature" ; ks:parameterValue 0.0 ] .
+
+    agent:llm-model-a a prov:SoftwareAgent ; rdfs:label "model-a" ;
+        ks:softwareVersion "model-a-2026-01-15" .
+    plan:prompt-qm-v1 a prov:Plan ; rdfs:label "Q-matrix prompt, version 1"@en ;
+        ks:planText "Za svaki zadatak navedi koje od datih kompetencija zahteva ..." .
+    source:T1-item-texts a prov:Entity ; rdfs:label "Item texts of test T1"@en .
+    source:K-T1-descriptions a prov:Entity ; rdfs:label "Descriptions of the competencies in K-T1"@en .
+}
+
+# --- 4. LLM, run 2: same model, prompt and parameters as run 1.
+struct:qm-llm-T1-r2 {
+    struct:qm-llm-T1-r2
+        ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 ;
+        ks:coversCompetency k1:add , k1:reduce , k1:expand .
+
+    t1:z1 ks:requires k1:add .                        # 1 0 0
+    t1:z2 ks:requires k1:add , k1:reduce .            # 1 1 0
+    t1:z3 ks:requires k1:add , k1:expand .            # 1 0 1
+    t1:z4 ks:requires k1:add , k1:reduce .            # 1 1 0
+}
+
+meta:qm-llm-T1-r2 {
+    struct:qm-llm-T1-r2 a ks:QMatrix ;
+        rdfs:label "LLM Q-matrix for T1, run 2"@en ;
+        ks:forTest test:T1 ; ks:usesScheme scheme:K-T1 ;
+        ks:runLabel "r2" ;
+        prov:wasGeneratedBy activity:qm-llm-T1-r2 ;
+        prov:wasAttributedTo agent:llm-model-a ;
+        prov:wasDerivedFrom source:T1-item-texts , source:K-T1-descriptions ;
+        prov:generatedAtTime "2026-05-02T10:20:00Z"^^xsd:dateTime .
+
+    activity:qm-llm-T1-r2 a ks:LLMElicitation ;
+        prov:wasAssociatedWith agent:llm-model-a ;
+        prov:qualifiedAssociation [ a prov:Association ;
+            prov:agent agent:llm-model-a ; prov:hadPlan plan:prompt-qm-v1 ] ;
+        prov:used source:T1-item-texts , source:K-T1-descriptions ;
+        ks:hasParameter [ a ks:Parameter ; ks:parameterName "temperature" ; ks:parameterValue 0.0 ] .
+
+    agent:llm-model-a a prov:SoftwareAgent ; rdfs:label "model-a" ;
+        ks:softwareVersion "model-a-2026-01-15" .
+    plan:prompt-qm-v1 a prov:Plan ; rdfs:label "Q-matrix prompt, version 1"@en ;
+        ks:planText "Za svaki zadatak navedi koje od datih kompetencija zahteva ..." .
+    source:T1-item-texts a prov:Entity ; rdfs:label "Item texts of test T1"@en .
+    source:K-T1-descriptions a prov:Entity ; rdfs:label "Descriptions of the competencies in K-T1"@en .
+}
+
+
+# ============================================================== prerequisite relations
+
+# --- 5. Expert, between competencies.
+struct:pr-expert-K-T1 {
+    struct:pr-expert-K-T1 ks:coversCompetency k1:add , k1:reduce , k1:expand .
+    k1:add ks:prerequisiteOf k1:expand .
+}
+closure:pr-expert-K-T1 {
+    k1:add ks:prerequisiteOf k1:expand .
+}
+meta:pr-expert-K-T1 {
+    struct:pr-expert-K-T1 a ks:PrerequisiteRelation ;
+        rdfs:label "Expert prerequisite relation between the competencies of K-T1"@en ;
+        ks:usesScheme scheme:K-T1 ;
+        ks:closureGraph closure:pr-expert-K-T1 ;
+        prov:wasGeneratedBy activity:pr-expert-K-T1 ;
+        prov:wasAttributedTo agent:expert-01 ;
+        prov:wasDerivedFrom source:K-T1-descriptions ;
+        prov:generatedAtTime "2026-10-05T09:30:00Z"^^xsd:dateTime .
+
+    activity:pr-expert-K-T1 a ks:ExpertElicitation ;
+        prov:wasAssociatedWith agent:expert-01 ;
+        prov:used source:K-T1-descriptions .
+
+    agent:expert-01 a prov:Person ; rdfs:label "Expert 01" .
+    source:K-T1-descriptions a prov:Entity ; rdfs:label "Descriptions of the competencies in K-T1"@en .
+}
+
+# --- 6. QUERY procedure with a second expert, between items.
+struct:pr-query-T1 {
+    struct:pr-query-T1 ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 .
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 .
+    t1:z2 ks:prerequisiteOf t1:z4 .
+    t1:z3 ks:prerequisiteOf t1:z4 .
+}
+closure:pr-query-T1 {
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 , t1:z4 .
+    t1:z2 ks:prerequisiteOf t1:z4 .
+    t1:z3 ks:prerequisiteOf t1:z4 .
+}
+meta:pr-query-T1 {
+    struct:pr-query-T1 a ks:PrerequisiteRelation ;
+        rdfs:label "QUERY prerequisite relation for T1"@en ;
+        ks:forTest test:T1 ;
+        ks:closureGraph closure:pr-query-T1 ;
+        prov:wasGeneratedBy activity:pr-query-T1 ;
+        prov:wasAttributedTo agent:expert-02 ;
+        prov:wasDerivedFrom source:T1-item-texts ;
+        prov:generatedAtTime "2026-10-12T14:00:00Z"^^xsd:dateTime .
+
+    activity:pr-query-T1 a ks:QueryProcedure ;
+        prov:wasAssociatedWith agent:expert-02 ;
+        prov:used source:T1-item-texts .
+
+    agent:expert-02 a prov:Person ; rdfs:label "Expert 02" .
+    source:T1-item-texts a prov:Entity ; rdfs:label "Item texts of test T1"@en .
+}
+
+# --- 7. IITA (DAKS) over response data.
+struct:pr-iita-T1 {
+    struct:pr-iita-T1 ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 .
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 .
+    t1:z2 ks:prerequisiteOf t1:z4 .
+}
+closure:pr-iita-T1 {
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 , t1:z4 .
+    t1:z2 ks:prerequisiteOf t1:z4 .
+}
+meta:pr-iita-T1 {
+    struct:pr-iita-T1 a ks:PrerequisiteRelation ;
+        rdfs:label "IITA prerequisite relation for T1"@en ;
+        ks:forTest test:T1 ;
+        ks:closureGraph closure:pr-iita-T1 ;
+        prov:wasGeneratedBy activity:pr-iita-T1 ;
+        prov:wasAttributedTo agent:daks ;
+        prov:wasDerivedFrom source:responses-T1-2026 ;
+        prov:generatedAtTime "2026-11-01T11:00:00Z"^^xsd:dateTime .
+
+    activity:pr-iita-T1 a ks:DataDrivenDerivation ;
+        prov:wasAssociatedWith agent:daks ;
+        prov:qualifiedAssociation [ a prov:Association ;
+            prov:agent agent:daks ; prov:hadPlan plan:daks-iita ] ;
+        prov:used source:responses-T1-2026 ;
+        ks:hasParameter [ a ks:Parameter ; ks:parameterName "version" ; ks:parameterValue 2 ] .
+
+    agent:daks a prov:SoftwareAgent ; rdfs:label "R package DAKS" ; ks:softwareVersion "2.1.3" .
+    plan:daks-iita a prov:Plan ; rdfs:label "DAKS iita(): inductive item tree analysis"@en .
+    source:responses-T1-2026 a ks:ResponseDataset ;
+        rdfs:label "Responses to T1, 2026"@en ;
+        ks:respondentCount 200 ;
+        ks:location "podaci/T1/odgovori-2026.csv" ;
+        ks:sha256 "5555555555555555555555555555555555555555555555555555555555555555" .
+}
+
+# --- 8. kst-transformer over the same response data.
+struct:pr-transformer-T1 {
+    struct:pr-transformer-T1 ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 .
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 .
+    t1:z2 ks:prerequisiteOf t1:z3 .
+    t1:z3 ks:prerequisiteOf t1:z4 .
+}
+closure:pr-transformer-T1 {
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 , t1:z4 .
+    t1:z2 ks:prerequisiteOf t1:z3 , t1:z4 .
+    t1:z3 ks:prerequisiteOf t1:z4 .
+}
+meta:pr-transformer-T1 {
+    struct:pr-transformer-T1 a ks:PrerequisiteRelation ;
+        rdfs:label "kst-transformer prerequisite relation for T1"@en ;
+        ks:forTest test:T1 ;
+        ks:closureGraph closure:pr-transformer-T1 ;
+        prov:wasGeneratedBy activity:pr-transformer-T1 ;
+        prov:wasAttributedTo agent:kst-transformer ;
+        prov:wasDerivedFrom source:responses-T1-2026 ;
+        prov:generatedAtTime "2026-11-02T16:30:00Z"^^xsd:dateTime .
+
+    activity:pr-transformer-T1 a ks:DataDrivenDerivation ;
+        prov:wasAssociatedWith agent:kst-transformer ;
+        prov:qualifiedAssociation [ a prov:Association ;
+            prov:agent agent:kst-transformer ; prov:hadPlan plan:kst-transformer-inference ] ;
+        prov:used source:responses-T1-2026 ;
+        ks:hasParameter [ a ks:Parameter ; ks:parameterName "threshold" ; ks:parameterValue 0.5 ] .
+
+    agent:kst-transformer a prov:SoftwareAgent ; rdfs:label "kst-transformer" ; ks:softwareVersion "0.3.0" .
+    plan:kst-transformer-inference a prov:Plan ; rdfs:label "kst-transformer: predict a prerequisite relation from responses"@en .
+    source:responses-T1-2026 a ks:ResponseDataset ;
+        rdfs:label "Responses to T1, 2026"@en ;
+        ks:respondentCount 200 ;
+        ks:location "podaci/T1/odgovori-2026.csv" ;
+        ks:sha256 "5555555555555555555555555555555555555555555555555555555555555555" .
+}
+
+# --- 9. Item level, computed from the expert competency relation (5) and Q-matrix v2 (2)
+#        (competence-based KST: a before b when b requires everything a requires).
+struct:pr-derived-T1 {
+    struct:pr-derived-T1 ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 .
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 .
+    t1:z2 ks:prerequisiteOf t1:z4 .
+    t1:z3 ks:prerequisiteOf t1:z4 .
+}
+closure:pr-derived-T1 {
+    t1:z1 ks:prerequisiteOf t1:z2 , t1:z3 , t1:z4 .
+    t1:z2 ks:prerequisiteOf t1:z4 .
+    t1:z3 ks:prerequisiteOf t1:z4 .
+}
+meta:pr-derived-T1 {
+    struct:pr-derived-T1 a ks:PrerequisiteRelation ;
+        rdfs:label "Item prerequisite relation for T1 derived from competencies"@en ;
+        ks:forTest test:T1 ;
+        ks:closureGraph closure:pr-derived-T1 ;
+        prov:wasGeneratedBy activity:pr-derived-T1 ;
+        prov:wasDerivedFrom struct:pr-expert-K-T1 , struct:qm-expert-T1-v2 ;
+        prov:generatedAtTime "2026-11-10T10:00:00Z"^^xsd:dateTime .
+
+    activity:pr-derived-T1 a ks:Transformation ;
+        prov:wasAssociatedWith agent:ks-tools ;
+        prov:qualifiedAssociation [ a prov:Association ;
+            prov:agent agent:ks-tools ; prov:hadPlan plan:competence-based-item-relation ] ;
+        prov:used struct:pr-expert-K-T1 , struct:qm-expert-T1-v2 .
+
+    agent:ks-tools a prov:SoftwareAgent ; rdfs:label "ks-graph tools" ; ks:softwareVersion "0.1.0" .
+    plan:competence-based-item-relation a prov:Plan ;
+        rdfs:label "Item relation from a competency relation and a Q-matrix"@en .
+}
+
+
+# ============================================================== knowledge space
+
+# --- 10. Knowledge space of the IITA relation (7), computed with kst.
+#         States are the sets closed under the relation: 7 of them.
+struct:ks-iita-T1 {
+    struct:ks-iita-T1 ks:coversItem t1:z1 , t1:z2 , t1:z3 , t1:z4 ;
+        ks:hasState
+            [ a ks:KnowledgeState ] ,
+            [ a ks:KnowledgeState ; ks:containsItem t1:z1 ] ,
+            [ a ks:KnowledgeState ; ks:containsItem t1:z1 , t1:z2 ] ,
+            [ a ks:KnowledgeState ; ks:containsItem t1:z1 , t1:z3 ] ,
+            [ a ks:KnowledgeState ; ks:containsItem t1:z1 , t1:z2 , t1:z3 ] ,
+            [ a ks:KnowledgeState ; ks:containsItem t1:z1 , t1:z2 , t1:z4 ] ,
+            [ a ks:KnowledgeState ; ks:containsItem t1:z1 , t1:z2 , t1:z3 , t1:z4 ] .
+}
+meta:ks-iita-T1 {
+    struct:ks-iita-T1 a ks:KnowledgeSpace ;
+        rdfs:label "Knowledge space of the IITA relation for T1"@en ;
+        ks:forTest test:T1 ;
+        prov:wasGeneratedBy activity:ks-iita-T1 ;
+        prov:wasDerivedFrom struct:pr-iita-T1 ;
+        prov:generatedAtTime "2026-11-01T11:05:00Z"^^xsd:dateTime .
+
+    activity:ks-iita-T1 a ks:Transformation ;
+        prov:wasAssociatedWith agent:kst ;
+        prov:qualifiedAssociation [ a prov:Association ;
+            prov:agent agent:kst ; prov:hadPlan plan:kst-kspace ] ;
+        prov:used struct:pr-iita-T1 .
+
+    agent:kst a prov:SoftwareAgent ; rdfs:label "R package kst" ; ks:softwareVersion "0.5-4" .
+    plan:kst-kspace a prov:Plan ; rdfs:label "kst kspace(): knowledge space of a surmise relation"@en .
+}
+
+
+# ============================================================== Learning Commons
+
+# --- 11. Baseline imported from Learning Commons (buildsTowards -> ks:prerequisiteOf).
+struct:pr-lc-mcm {
+    struct:pr-lc-mcm ks:coversCompetency lc:4.NF.A.1 , lc:4.NF.B.3 , lc:5.NF.A.1 .
+    lc:4.NF.A.1 ks:prerequisiteOf lc:5.NF.A.1 .
+    lc:4.NF.B.3 ks:prerequisiteOf lc:5.NF.A.1 .
+}
+closure:pr-lc-mcm {
+    lc:4.NF.A.1 ks:prerequisiteOf lc:5.NF.A.1 .
+    lc:4.NF.B.3 ks:prerequisiteOf lc:5.NF.A.1 .
+}
+meta:pr-lc-mcm {
+    struct:pr-lc-mcm a ks:PrerequisiteRelation ;
+        rdfs:label "Learning Commons Math Coherence Map excerpt"@en ;
+        ks:usesScheme scheme:lc-mcm ;
+        ks:closureGraph closure:pr-lc-mcm ;
+        prov:wasGeneratedBy activity:import-lc-mcm ;
+        prov:wasAttributedTo agent:learning-commons ;
+        prov:wasDerivedFrom source:lc-math-coherence-map ;
+        prov:generatedAtTime "2026-11-15T12:00:00Z"^^xsd:dateTime .
+
+    activity:import-lc-mcm a ks:Import ;
+        prov:wasAssociatedWith agent:ks-tools ;
+        prov:used source:lc-math-coherence-map .
+
+    agent:learning-commons a prov:Organization ; rdfs:label "Learning Commons" .
+    agent:ks-tools a prov:SoftwareAgent ; rdfs:label "ks-graph tools" ; ks:softwareVersion "0.1.0" .
+    source:lc-math-coherence-map a prov:Entity ;
+        rdfs:label "Learning Commons knowledge graph: Math Coherence Map"@en ;
+        ks:location "https://docs.learningcommons.org/knowledge-graph/datasets/math-coherence-map.md" .
+}
+
+# --- 12. Mapping of K-T1 to the Learning Commons competencies.
+struct:cm-K-T1-lc-mcm {
+    k1:add    skos:exactMatch   lc:4.NF.B.3 .
+    k1:expand skos:closeMatch   lc:5.NF.A.1 .
+    k1:reduce skos:relatedMatch lc:4.NF.A.1 .
+}
+meta:cm-K-T1-lc-mcm {
+    struct:cm-K-T1-lc-mcm a ks:CompetencyMapping ;
+        rdfs:label "Mapping of K-T1 to the Learning Commons excerpt"@en ;
+        ks:fromScheme scheme:K-T1 ; ks:toScheme scheme:lc-mcm ;
+        prov:wasGeneratedBy activity:cm-K-T1-lc-mcm ;
+        prov:wasAttributedTo agent:expert-01 ;
+        prov:wasDerivedFrom scheme:K-T1 , scheme:lc-mcm ;
+        prov:generatedAtTime "2026-11-16T09:00:00Z"^^xsd:dateTime .
+
+    activity:cm-K-T1-lc-mcm a ks:CompetencyAlignment ;
+        prov:wasAssociatedWith agent:expert-01 ;
+        prov:used scheme:K-T1 , scheme:lc-mcm .
+
+    agent:expert-01 a prov:Person ; rdfs:label "Expert 01" .
+}

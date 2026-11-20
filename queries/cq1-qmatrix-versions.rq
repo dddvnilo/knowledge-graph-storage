@@ -1,0 +1,25 @@
+# CQ1: Which versions of the Q-matrix exist for a test, who or what produced them,
+#      when, and by which procedure?
+# Parameter: the test (VALUES ?test).
+
+PREFIX ks:   <https://example.org/ks#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX test: <https://example.org/data/test/>
+
+SELECT ?structure ?procedure ?agent ?plan ?version ?run ?revisionOf ?generatedAt
+WHERE {
+  VALUES ?test { test:T1 }
+  GRAPH ?meta {
+    ?structure a ks:QMatrix ;
+               ks:forTest ?test ;
+               prov:wasGeneratedBy ?activity .
+    ?activity a ?procedure .
+    OPTIONAL { ?activity prov:wasAssociatedWith ?agent }
+    OPTIONAL { ?activity prov:qualifiedAssociation/prov:hadPlan ?plan }
+    OPTIONAL { ?structure ks:versionLabel ?version }
+    OPTIONAL { ?structure ks:runLabel ?run }
+    OPTIONAL { ?structure prov:wasRevisionOf ?revisionOf }
+    OPTIONAL { ?structure prov:generatedAtTime ?generatedAt }
+  }
+}
+ORDER BY ?structure

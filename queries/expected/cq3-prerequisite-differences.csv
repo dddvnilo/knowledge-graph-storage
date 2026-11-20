@@ -1,0 +1,4 @@
+a,b,onlyIn,from,to
+struct:pr-iita-T1,struct:pr-transformer-T1,B,t1:z2,t1:z3
+struct:pr-iita-T1,struct:pr-transformer-T1,B,t1:z3,t1:z4
+struct:pr-query-T1,struct:pr-iita-T1,A,t1:z3,t1:z4

@@ -1,0 +1,21 @@
+# What the store contains: `python tools/kg.py rebuild --yes` empties Virtuoso
+# and loads every entry below, in this order. Adding a file to the store means
+# adding it here (or putting it where an existing pattern finds it).
+#
+#   files  glob relative to the repository root
+#   graph  named graph for single-graph files (.ttl, .owl, .rdf, .nt, .jsonld);
+#          quad files (.trig, .nq) carry their own graph names and need none
+
+# The project's ontology (T3).
+[[load]]
+files = "ontology/*.ttl"
+graph = "https://example.org/ks"
+
+# Data: TriG files, one named graph per structure, provenance included.
+[[load]]
+files = "data/**/*.trig"
+
+# Hand-written example of the data model; the queries in queries/ are tested on it.
+# Remove once real data exists.
+[[load]]
+files = "examples/model-example.trig"

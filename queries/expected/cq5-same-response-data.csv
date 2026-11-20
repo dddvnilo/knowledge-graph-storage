@@ -1,0 +1,4 @@
+dataset,structure,type,derivation
+source:responses-T1-2026,struct:ks-iita-T1,ks:KnowledgeSpace,indirect
+source:responses-T1-2026,struct:pr-iita-T1,ks:PrerequisiteRelation,direct
+source:responses-T1-2026,struct:pr-transformer-T1,ks:PrerequisiteRelation,direct

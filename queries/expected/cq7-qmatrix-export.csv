@@ -1,0 +1,13 @@
+item,competency,value
+t1:z1,k1:add,1
+t1:z1,k1:expand,0
+t1:z1,k1:reduce,0
+t1:z2,k1:add,1
+t1:z2,k1:expand,0
+t1:z2,k1:reduce,1
+t1:z3,k1:add,1
+t1:z3,k1:expand,1
+t1:z3,k1:reduce,0
+t1:z4,k1:add,1
+t1:z4,k1:expand,NA
+t1:z4,k1:reduce,1

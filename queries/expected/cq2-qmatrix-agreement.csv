@@ -1,0 +1,4 @@
+a,b,cells,both1,both0,onlyA,onlyB,accuracy,kappa
+struct:qm-expert-T1-v1,struct:qm-llm-T1-r1,11,6,4,1,0,0.9091,0.8136
+struct:qm-expert-T1-v2,struct:qm-llm-T1-r1,12,7,4,1,0,0.9167,0.8235
+struct:qm-llm-T1-r1,struct:qm-llm-T1-r2,12,6,4,1,1,0.8333,0.6571

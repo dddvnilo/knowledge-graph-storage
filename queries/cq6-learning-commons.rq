@@ -1,0 +1,36 @@
+# CQ6: Which of the group's competencies have a counterpart in Learning Commons,
+#      and how are they related there?
+# Parameters: the group's scheme and the Learning Commons scheme (VALUES).
+#
+# One row per prerequisite link of the counterpart in a Learning Commons structure:
+#   relation   "prerequisiteOf"   the counterpart is a prerequisite of lcOther
+#              "hasPrerequisite"  lcOther is a prerequisite of the counterpart
+#   ourOther   the group's competency mapped to lcOther, if any; shows the Learning
+#              Commons link in the group's own terms
+
+PREFIX ks:     <https://example.org/ks#>
+PREFIX skos:   <http://www.w3.org/2004/02/skos/core#>
+PREFIX scheme: <https://example.org/data/scheme/>
+
+SELECT ?competency ?match ?counterpart ?relation ?lcOther ?ourOther
+WHERE {
+  VALUES (?ourScheme ?lcScheme) { (scheme:K-T1 scheme:lc-mcm) }
+  GRAPH ?mappingMeta { ?mapping a ks:CompetencyMapping ; ks:fromScheme ?ourScheme ; ks:toScheme ?lcScheme }
+  GRAPH ?mapping { ?competency ?match ?counterpart }
+  VALUES ?match { skos:exactMatch skos:closeMatch skos:broadMatch skos:narrowMatch skos:relatedMatch }
+
+  OPTIONAL {
+    GRAPH ?lcMeta { ?lcStructure a ks:PrerequisiteRelation ; ks:usesScheme ?lcScheme }
+    {
+      GRAPH ?lcStructure { ?counterpart ks:prerequisiteOf ?lcOther }
+      BIND("prerequisiteOf" AS ?relation)
+    }
+    UNION
+    {
+      GRAPH ?lcStructure { ?lcOther ks:prerequisiteOf ?counterpart }
+      BIND("hasPrerequisite" AS ?relation)
+    }
+    OPTIONAL { GRAPH ?mapping { ?ourOther ?anyMatch ?lcOther } }
+  }
+}
+ORDER BY ?competency ?lcOther

@@ -1,0 +1,6 @@
+ancestor,type
+source:K-T1-descriptions,prov:Entity
+source:T1-item-texts,prov:Entity
+struct:pr-expert-K-T1,ks:PrerequisiteRelation
+struct:qm-expert-T1-v1,ks:QMatrix
+struct:qm-expert-T1-v2,ks:QMatrix

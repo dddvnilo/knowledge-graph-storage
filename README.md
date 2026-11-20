@@ -233,6 +233,24 @@ Each task defines a goal, an output and a completion criterion, but not *how* it
 - Which platform is the graph integrated into, and through what interface?
 ---
  
+## Repository contents
+
+| Path | What |
+|---|---|
+| `infra/` | local Virtuoso in Docker; setup and usage in [infra/README.md](infra/README.md) |
+| `store.toml` | the list of files that make up the store; `python tools/kg.py rebuild --yes` loads them into an empty store |
+| `ontology/` | the ontology [`ks.ttl`](ontology/ks.ttl) and how the data model uses named graphs: [ontology/README.md](ontology/README.md) |
+| `queries/` | a SPARQL query for each question CQ1–CQ7, with expected results on the example in `queries/expected/` |
+| `examples/` | [`model-example.trig`](examples/model-example.trig): hand-written example of the data model; `smoke.trig`: infrastructure test data |
+| `data/` | data loaded into the store, as TriG (empty until T5) |
+| `docs/decisions.md` | design decisions and why they were made |
+| `tools/kg.py` | command-line tool: load RDF, list graphs, run queries, rebuild and self-test the store |
+| `tools/cq.py` | runs the queries in `queries/` and checks them against the expected results |
+| `tools/check_rdf.py` | checks the files in `store.toml` for rules the store does not enforce (closures, scopes) |
+| `platform/` | a separate KST analysis platform (R packages called from Python); its role in this project is not settled |
+
+---
+
 ## Related project
  
 [kst-transformer](https://github.com/dddvnilo/kst-transformer): a transformer model that derives a prerequisite relation between items from response data, evaluated against IITA. It is one possible data-driven source for this graph. The graph is not designed around it.
