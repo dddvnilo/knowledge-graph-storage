@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/ks/paket-qm-0.1.schema.json",
+  "title": "Paket Q-matrice, v0.1 (radni predlog)",
+  "description": "Jedan paket = jedna verzija ili jedno pokretanje jedne Q-matrice, sa poreklom. Obuhvata samo ekspertske i LLM Q-matrice.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "package", "structure", "items", "competencies", "matrix", "provenance"],
+  "properties": {
+    "schema_version": { "const": "0.1" },
+
+    "package": {
+      "description": "Podaci o pravljenju paketa (sloj uvoza), ne o nastanku Q-matrice.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_at", "producer", "source_file", "transformations"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "producer": { "type": "string", "description": "Program i njegova verzija koji su napravili paket." },
+        "source_file": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "sha256"],
+          "properties": {
+            "name": { "type": "string" },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        },
+        "transformations": {
+          "description": "Šta je priprema promenila u odnosu na izvorni fajl (npr. 'x' -> 1). Prazan niz ako ništa.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "structure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "test_id", "competency_scheme_id", "version", "run", "revision_of"],
+      "properties": {
+        "id": { "$ref": "#/$defs/localId" },
+        "type": { "const": "q_matrix" },
+        "test_id": { "$ref": "#/$defs/localId" },
+        "competency_scheme_id": { "$ref": "#/$defs/localId" },
+        "version": { "type": ["string", "null"], "description": "Namerna verzija istog izvora (v1, v2...). null ako ne postoji." },
+        "run": { "type": ["string", "null"], "description": "Oznaka nezavisnog pokretanja istog postupka (r1, r2...), npr. za LLM. null ako ne postoji." },
+        "revision_of": {
+          "description": "structure.id prethodne verzije koju ova menja.",
+          "oneOf": [{ "$ref": "#/$defs/localId" }, { "type": "null" }]
+        }
+      }
+    },
+
+    "items": {
+      "description": "Redovi matrice, ovim redom.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entity" }
+    },
+
+    "competencies": {
+      "description": "Kolone matrice, ovim redom.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entity" }
+    },
+
+    "matrix": {
+      "description": "1 = stavka zahteva kompetenciju, 0 = ne zahteva, null = nepoznato.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "enum": [0, 1, null] }
+      }
+    },
+
+    "cell_annotations": {
+      "description": "Opcioni dodaci po ćeliji, samo ako ih izvor daje.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item_id", "competency_id"],
+        "properties": {
+          "item_id": { "$ref": "#/$defs/localId" },
+          "competency_id": { "$ref": "#/$defs/localId" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+
+    "provenance": {
+      "description": "Nastanak Q-matrice. Polja su oblikovana po PROV-O pojmovima.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin_type", "agents", "plan", "parameters", "inputs", "generated_at"],
+      "properties": {
+        "origin_type": { "enum": ["expert", "llm"] },
+        "agents": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/agent" }
+        },
+        "plan": {
+          "description": "Metod ili prompt. null ako nije poznat.",
+          "oneOf": [{ "$ref": "#/$defs/plan" }, { "type": "null" }]
+        },
+        "parameters": {
+          "description": "Parametri postupka, npr. {\"temperature\": 0.0}. Prazan objekat ako ih nema.",
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+        },
+        "inputs": {
+          "description": "Šta je postupak koristio (tekstovi zadataka, opisi kompetencija...).",
+          "type": "array",
+          "items": { "$ref": "#/$defs/input" }
+        },
+        "generated_at": { "$ref": "#/$defs/nullableDateTime" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "origin_type": { "const": "llm" } } },
+          "then": {
+            "properties": {
+              "plan": { "$ref": "#/$defs/plan" },
+              "agents": {
+                "contains": {
+                  "type": "object",
+                  "required": ["kind", "version"],
+                  "properties": {
+                    "kind": { "const": "software" },
+                    "version": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+
+  "$defs": {
+    "localId": {
+      "description": "Lokalni identifikator, bezbedan za pravljenje IRI-ja.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "nullableDateTime": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/localId" },
+        "label": { "type": "string" },
+        "source_label": { "type": "string", "description": "Oznaka tačno kako piše u izvornom fajlu." },
+        "text": { "type": "string", "description": "Tekst zadatka (za stavke) ili opis kompetencije, ako postoji." }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "name", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/localId" },
+        "kind": { "enum": ["person", "software", "organization"] },
+        "name": { "type": ["string", "null"] },
+        "version": { "type": ["string", "null"], "description": "Za softver i LLM: tačan identifikator modela ili verzija." }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/localId" },
+        "description": { "type": "string" },
+        "text": { "type": "string", "description": "Npr. ceo tekst prompta." }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": { "$ref": "#/$defs/localId" },
+        "description": { "type": "string" },
+        "location": { "type": "string", "description": "Gde se ulaz nalazi (putanja, URL, DOI) kada sadržaj nije u paketu." },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

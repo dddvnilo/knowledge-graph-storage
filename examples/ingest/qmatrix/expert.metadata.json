@@ -1,0 +1,38 @@
+{
+  "csv": {
+    "item_column": "zadatak",
+    "delimiter": ",",
+    "values": {"x": 1, "-": 0, "?": null}
+  },
+  "structure": {
+    "id": "qm-demo-csv-expert-v1",
+    "type": "q_matrix",
+    "test_id": "demo-fractions-csv",
+    "competency_scheme_id": "demo-fractions-csv-skills",
+    "version": "v1",
+    "run": null,
+    "revision_of": null
+  },
+  "items": [
+    {"id": "z1", "source_label": "Zadatak 1", "text": "Izračunaj 1/4 + 2/4."},
+    {"id": "z2", "source_label": "Zadatak 2", "text": "Izračunaj 1/6 + 3/6 i skrati rezultat."},
+    {"id": "z3", "source_label": "Zadatak 3", "text": "Izračunaj 2/8 + 4/8 i skrati rezultat."}
+  ],
+  "competencies": [
+    {"id": "sabiranje", "source_label": "K1", "label": "Sabiranje razlomaka", "text": "Sabiranje razlomaka sa istim imeniocem."},
+    {"id": "skracivanje", "source_label": "K2", "label": "Skraćivanje razlomaka", "text": "Svođenje razlomka na neskrativ oblik."}
+  ],
+  "provenance": {
+    "origin_type": "expert",
+    "agents": [
+      {"id": "expert-demo-01", "kind": "person", "name": "Demonstracioni ekspert (izmišljeni podaci)", "version": null}
+    ],
+    "plan": null,
+    "parameters": {},
+    "inputs": [
+      {"id": "demo-fractions-csv-item-texts", "description": "Izmišljeni tekstovi zadataka priloženi u items[].text."},
+      {"id": "demo-fractions-csv-skill-texts", "description": "Zajednička demonstraciona lista kompetencija, priložena u competencies[].text."}
+    ],
+    "generated_at": null
+  }
+}

@@ -1,0 +1,2 @@
+# Keep the demo CSV bytes stable across clones: packages record their SHA-256.
+examples/ingest/qmatrix/*.csv text eol=lf

@@ -1,0 +1,106 @@
+{
+  "schema_version": "0.1",
+  "package": {
+    "created_at": "2026-11-22T17:01:39.467312Z",
+    "producer": "qmatrix-csv-importer 0.1.0",
+    "source_file": {
+      "name": "llm.csv",
+      "sha256": "6aa1879a245e164966ad02d6958ce1c4f09be5bf69d71eb7586c51c17ba8e4f6"
+    },
+    "transformations": [
+      "Mapped CSV row/column source_label values to declared local IDs; preserved source row/column order."
+    ]
+  },
+  "structure": {
+    "id": "qm-demo-csv-llm-r1",
+    "type": "q_matrix",
+    "test_id": "demo-fractions-csv",
+    "competency_scheme_id": "demo-fractions-csv-skills",
+    "version": null,
+    "run": "r1",
+    "revision_of": null
+  },
+  "items": [
+    {
+      "id": "z1",
+      "source_label": "Zadatak 1",
+      "text": "Izračunaj 1/4 + 2/4."
+    },
+    {
+      "id": "z2",
+      "source_label": "Zadatak 2",
+      "text": "Izračunaj 1/6 + 3/6 i skrati rezultat."
+    },
+    {
+      "id": "z3",
+      "source_label": "Zadatak 3",
+      "text": "Izračunaj 2/8 + 4/8 i skrati rezultat."
+    }
+  ],
+  "competencies": [
+    {
+      "id": "sabiranje",
+      "source_label": "K1",
+      "label": "Sabiranje razlomaka",
+      "text": "Sabiranje razlomaka sa istim imeniocem."
+    },
+    {
+      "id": "skracivanje",
+      "source_label": "K2",
+      "label": "Skraćivanje razlomaka",
+      "text": "Svođenje razlomka na neskrativ oblik."
+    }
+  ],
+  "matrix": [
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "provenance": {
+    "origin_type": "llm",
+    "agents": [
+      {
+        "id": "llm-demo-01",
+        "kind": "software",
+        "name": "Demonstracioni model (nije pokrenut)",
+        "version": "demo-model-not-executed-v1"
+      }
+    ],
+    "plan": {
+      "id": "demo-fractions-qmatrix-prompt-v1",
+      "description": "Demonstracioni prompt; primer nije stvarni rezultat pokretanja modela.",
+      "text": "Za svaki od priloženih zadataka Z1, Z2 i Z3 odredi da li zahteva K1 (sabiranje razlomaka sa istim imeniocem) i K2 (skraćivanje razlomaka). Koristi isključivo tu listu kompetencija. Vrati CSV sa kolonama zadatak,K1,K2; koristi 1 za potrebno, 0 za nepotrebno i ? za nepoznato."
+    },
+    "parameters": {
+      "temperature": 0.0
+    },
+    "inputs": [
+      {
+        "id": "demo-fractions-csv-item-texts",
+        "description": "Izmišljeni tekstovi zadataka priloženi u items[].text."
+      },
+      {
+        "id": "demo-fractions-csv-skill-texts",
+        "description": "Zajednička demonstraciona lista kompetencija, priložena u competencies[].text."
+      }
+    ],
+    "generated_at": null
+  },
+  "cell_annotations": [
+    {
+      "item_id": "z2",
+      "competency_id": "skracivanje",
+      "confidence": 0.4,
+      "rationale": "Izmišljeno obrazloženje radi demonstracije prenosa anotacija; nije procena stvarnog modela."
+    }
+  ]
+}

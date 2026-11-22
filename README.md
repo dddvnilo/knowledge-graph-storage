@@ -243,6 +243,7 @@ Each task defines a goal, an output and a completion criterion, but not *how* it
 | `queries/` | a SPARQL query for each question CQ1–CQ7, with expected results on the example in `queries/expected/` |
 | `examples/` | [`model-example.trig`](examples/model-example.trig): hand-written example of the data model; `smoke.trig`: infrastructure test data |
 | `data/` | data loaded into the store, as TriG (empty until T5) |
+| `ingest/` | CSV preparation for expert/LLM Q-matrices: metadata, shared v0.1 validation and two runnable examples; [usage](ingest/README.md) |
 | `docs/decisions.md` | design decisions and why they were made |
 | `tools/kg.py` | command-line tool: load RDF, list graphs, run queries, rebuild and self-test the store |
 | `tools/cq.py` | runs the queries in `queries/` and checks them against the expected results |
